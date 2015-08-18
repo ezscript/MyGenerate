@@ -1,0 +1,5 @@
+/*
+ * Powered By [douniwan]
+ * Generate Date: <#if now??> ${now?string('yyyy-MM-dd')}</#if>
+ */
+

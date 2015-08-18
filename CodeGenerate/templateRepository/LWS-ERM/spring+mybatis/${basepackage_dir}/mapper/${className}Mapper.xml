@@ -1,0 +1,173 @@
+<#include "/macro.include"/>
+<#assign className = table.className>   
+<#assign classNameFirstLower = table.classNameFirstLower>   
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<#macro mapperEl value jdbcTypeValue>${"#{"}${value}, jdbcType=${jdbcTypeValue}${"}"}</#macro>
+<!-- 日期型字段 jdbcType 默认是DATE，这里都修改成  TIMESTAMP，否则入库后时间信息将丢失 -->
+<#macro mapperTimestamp value>${"#{"}${value}, jdbcType=TIMESTAMP${"}"}</#macro>
+<mapper namespace="${basepackage}.mapper.${className}Mapper">
+
+    <!-- 自动生成开始 -->
+    <resultMap id="BaseDGMap" type="${basepackage}.model.${className}">
+        <#list table.pkColumns as column>
+        <id column="${column.sqlName}" property="${column.columnNameLower}" jdbcType="${column.jdbcSqlTypeName}"/>
+        </#list>
+        <#list table.notPkColumns as column>
+        <#if column.isDateTimeColumn>
+        <result column="${column.sqlName}" property="${column.columnNameLower}" jdbcType="TIMESTAMP"/>
+        <#else>
+        <result column="${column.sqlName}" property="${column.columnNameLower}" jdbcType="${column.jdbcSqlTypeName}"/>
+        </#if>
+        </#list>
+    </resultMap>
+    
+    <!-- 用于select查询公用抽取的列 -->
+    <sql id="BaseColumns">
+        <![CDATA[
+        <#list table.columns as column>${column.sqlName}<#if column_has_next>, </#if></#list>
+        ]]>
+    </sql>
+
+    <insert id="save" parameterType="${basepackage}.model.${className}">
+        <#list table.compositeIdColumns as column>
+        <selectKey keyProperty="${column.columnNameFirstLower}" order="BEFORE" resultType="${column.javaType}">
+            SELECT SEQ_${table.sqlName[2..]}.nextval AS ${column.columnNameFirstLower} FROM DUAL 
+        </selectKey>
+        </#list>
+    	<![CDATA[
+	        INSERT INTO ${table.sqlName} (
+	        <#list table.columns as column>
+	            ${column.sqlName}<#if column_has_next>, </#if>
+	        </#list>
+	        ) VALUES (
+	        <#list table.columns as column>
+		        <#if column.isDateTimeColumn>
+		        <@mapperTimestamp column.columnNameFirstLower/><#if column_has_next>, </#if>
+		        <#else>
+	            <@mapperEl column.columnNameFirstLower column.jdbcSqlTypeName/><#if column_has_next>, </#if>
+		        </#if>
+	        </#list>        
+	        )
+    	]]>
+    </insert>
+    
+    <update id="update" parameterType="${basepackage}.model.${className}">
+    <![CDATA[
+        UPDATE ${table.sqlName} SET
+            <#list table.notPkColumns as column>
+	        <#if column.isDateTimeColumn>
+	        ${column.sqlName} = <@mapperTimestamp column.columnNameFirstLower/><#if column_has_next>, </#if>
+	        <#else>
+            ${column.sqlName} = <@mapperEl column.columnNameFirstLower column.jdbcSqlTypeName/> <#if column_has_next>,</#if>
+	        </#if>
+            </#list>
+        WHERE 
+            <#list table.compositeIdColumns as column>
+            ${column.sqlName} = <@mapperEl column.columnNameLower column.jdbcSqlTypeName/> <#if column_has_next> AND </#if>
+            </#list>            
+    ]]>
+    </update>
+    
+    <select id="getById" resultMap="BaseDGMap" parameterType="java.math.BigDecimal">
+        SELECT
+            <include refid="BaseColumns" />
+        <![CDATA[
+        FROM ${table.sqlName} 
+        WHERE 
+        <#list table.compositeIdColumns as column>
+            ${column.sqlName} = <@mapperEl 'id' column.jdbcSqlTypeName/> <#if column_has_next> AND </#if>
+        </#list>    
+        ]]>
+    </select>
+    
+    <delete id="deleteById">
+    <![CDATA[
+        DELETE FROM ${table.sqlName} WHERE
+        <#list table.compositeIdColumns as column>
+        ${column.sqlName} = <@mapperEl 'id' column.jdbcSqlTypeName/> <#if column_has_next> AND </#if>
+        </#list>
+    ]]>
+    </delete>
+    
+    <!-- 数据列表排序使用Sort进行排序 -->
+    <select id="findAll" resultMap="BaseDGMap" parameterType="${basepackage}.model.${className}">
+		<include refid="com.dgtech.base.mybatis.DataBoundsMapper.DialectPagePrefix" />
+        SELECT
+            <include refid="BaseColumns" />
+        FROM ${table.sqlName} 
+            <include refid="findAllWhereClause"/>
+        ORDER BY ${table.idColumn.sqlName} DESC
+		<include refid="com.dgtech.base.mybatis.DataBoundsMapper.DialectPageSuffix" />
+    </select>
+	<sql id="findAllWhereClause">
+	<!-- ognl访问静态方法的表达式 为@class@method(args),以下为调用rapid中的Ognl.isNotEmpty()方法,还有其它方法如isNotBlank()可以使用，具体请查看Ognl类 -->
+		<where>                          
+			<#list table.columns as column>
+			<#if column.isDateTimeColumn>
+			<if test="record.${column.columnNameFirstLower}Begin != null">
+				AND ${column.sqlName} &gt;= <@mapperEl "record." + column.columnNameFirstLower+"Begin" column.jdbcSqlTypeName/>
+			</if>
+			<if test="record.${column.columnNameFirstLower}End != null">
+				AND ${column.sqlName} &lt;= <@mapperEl "record." + column.columnNameFirstLower+"End" column.jdbcSqlTypeName/>
+			</if>
+			<#else>
+			<if test="record.${column.columnNameFirstLower} != null">
+				AND ${column.sqlName} = <@mapperEl "record." + column.columnNameFirstLower column.jdbcSqlTypeName/>
+			</if>
+			</#if>
+			</#list>            
+		</where>
+	</sql>
+    
+    
+	<select id="getCount" resultType="java.lang.Long">
+		SELECT COUNT(*) FROM ${table.sqlName} 
+		<include refid="findPageWhereClause"/>    
+	</select>
+    <!-- 分页查询使用Dialect进行分页 -->
+    <!-- 数据列表排序使用Sort进行排序 -->
+    <select id="findPage" resultMap="BaseDGMap" parameterType="${basepackage}.model.${className}">
+		<include refid="com.dgtech.base.mybatis.DataBoundsMapper.DialectPagePrefix" />
+        SELECT
+            <include refid="BaseColumns" />
+        FROM ${table.sqlName} 
+            <include refid="findPageWhereClause"/>
+        ORDER BY ${table.idColumn.sqlName} DESC
+		<include refid="com.dgtech.base.mybatis.DataBoundsMapper.DialectPageSuffix" />
+    </select>
+	<sql id="findPageWhereClause">
+	<!-- ognl访问静态方法的表达式 为@class@method(args),以下为调用rapid中的Ognl.isNotEmpty()方法,还有其它方法如isNotBlank()可以使用，具体请查看Ognl类 -->
+	    <where>                          
+	       <#list table.columns as column>
+	       <#if column.isDateTimeColumn>
+	       <if test="record.${column.columnNameFirstLower}Begin != null">
+	            AND ${column.sqlName} &gt;= <@mapperEl "record." + column.columnNameFirstLower+"Begin" column.jdbcSqlTypeName/>
+	       </if>
+	       <if test="record.${column.columnNameFirstLower}End != null">
+	            AND ${column.sqlName} &lt;= <@mapperEl "record." + column.columnNameFirstLower+"End" column.jdbcSqlTypeName/>
+	       </if>
+	       <#else>
+	       <if test="record.${column.columnNameFirstLower} != null">
+	            AND ${column.sqlName} = <@mapperEl "record." + column.columnNameFirstLower column.jdbcSqlTypeName/>
+	        </if>
+	       </#if>
+	       </#list>            
+	    </where>
+	</sql>
+	
+	<#list table.columns as column>
+	<#if column.unique && !column.pk>
+	<select id="getBy${column.columnName[3..]}" resultMap="BaseDGMap" parameterType="${column.javaType}">
+		SELECT
+		<include refid="BaseColumns"/>
+			<![CDATA[
+			FROM ${table.sqlName} WHERE ${column.sqlName} = <@mapperEl column.columnName[3..]?lower_case column.jdbcSqlTypeName/>
+			]]>
+	</select>
+	</#if>
+	</#list>
+    <!-- 自动生成结束 -->
+</mapper>
+

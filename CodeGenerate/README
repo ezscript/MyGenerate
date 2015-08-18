@@ -1,0 +1,23 @@
+﻿开发需知：
+
+0.开发环境
+ JDK 1.6 以上
+ 本代码生成器是基于rapid-framework项目;
+
+1.目录介绍
+ [Project]                      项目根目录
+   |--- src                     Web项目java源代码目录
+   |---{JRE System Library}
+   |---{Referenced Library}
+   |--- lib                     项目依赖库
+   |--- document                项目相关文档(开发设计，使用手册等)
+   |--- dest                    代码生成区
+   |--- template                模板引用区
+   |--- templateRepository      模板仓库
+   |--- readme.txt              项目说明文件
+
+2.使用需知
+
+
+googlecode:
+http://code.google.com/p/rapid-framework/

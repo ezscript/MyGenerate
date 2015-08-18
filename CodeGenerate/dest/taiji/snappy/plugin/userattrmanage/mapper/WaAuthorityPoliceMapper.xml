@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+
+<!-- 日期型字段 jdbcType 默认是DATE，这里都修改成  TIMESTAMP，否则入库后时间信息将丢失 -->
+<mapper namespace="taiji.snappy.plugin.userattrmanage.mapper.WaAuthorityPoliceMapper">
+
+    <!-- 自动生成开始 -->
+    <resultMap id="BaseDGMap" type="taiji.snappy.plugin.userattrmanage.model.WaAuthorityPolice">
+        <id column="CERTIFICATE_CODE_MD5" property="certificateCodeMd5" jdbcType="VARCHAR"/>
+        <result column="CERTIFICATE_CODE_SUFFIX" property="certificateCodeSuffix" jdbcType="VARCHAR"/>
+        <result column="NAME" property="name" jdbcType="VARCHAR"/>
+        <result column="SEXCODE" property="sexcode" jdbcType="VARCHAR"/>
+        <result column="GA_DEPARTMENT" property="gaDepartment" jdbcType="VARCHAR"/>
+        <result column="UNIT" property="unit" jdbcType="VARCHAR"/>
+        <result column="ORG_LEVEL" property="orgLevel" jdbcType="VARCHAR"/>
+        <result column="POLICE_SORT" property="policeSort" jdbcType="VARCHAR"/>
+        <result column="POLICE_NO" property="policeNo" jdbcType="VARCHAR"/>
+        <result column="SENSITIVE_LEVEL" property="sensitiveLevel" jdbcType="VARCHAR"/>
+        <result column="BUSINESS_TYPE" property="businessType" jdbcType="VARCHAR"/>
+        <result column="TAKE_OFFICE" property="takeOffice" jdbcType="VARCHAR"/>
+        <result column="USER_STATUS" property="userStatus" jdbcType="CHAR"/>
+        <result column="DELETE_STATUS" property="deleteStatus" jdbcType="CHAR"/>
+        <result column="DATA_VERSION" property="dataVersion" jdbcType="DECIMAL"/>
+        <result column="LATEST_MOD_TIME" property="latestModTime" jdbcType="DECIMAL"/>
+    </resultMap>
+    
+    <!-- 用于select查询公用抽取的列 -->
+    <sql id="BaseColumns">
+        <![CDATA[
+        CERTIFICATE_CODE_MD5, CERTIFICATE_CODE_SUFFIX, NAME, SEXCODE, GA_DEPARTMENT, UNIT, ORG_LEVEL, POLICE_SORT, POLICE_NO, SENSITIVE_LEVEL, BUSINESS_TYPE, TAKE_OFFICE, USER_STATUS, DELETE_STATUS, DATA_VERSION, LATEST_MOD_TIME
+        ]]>
+    </sql>
+
+    <insert id="save" parameterType="taiji.snappy.plugin.userattrmanage.model.WaAuthorityPolice">
+        <selectKey keyProperty="certificateCodeMd5" order="BEFORE" resultType="java.lang.String">
+            SELECT SEQ__AUTHORITY_POLICE.nextval AS certificateCodeMd5 FROM DUAL 
+        </selectKey>
+    	<![CDATA[
+	        INSERT INTO WA_AUTHORITY_POLICE (
+	            CERTIFICATE_CODE_MD5, 
+	            CERTIFICATE_CODE_SUFFIX, 
+	            NAME, 
+	            SEXCODE, 
+	            GA_DEPARTMENT, 
+	            UNIT, 
+	            ORG_LEVEL, 
+	            POLICE_SORT, 
+	            POLICE_NO, 
+	            SENSITIVE_LEVEL, 
+	            BUSINESS_TYPE, 
+	            TAKE_OFFICE, 
+	            USER_STATUS, 
+	            DELETE_STATUS, 
+	            DATA_VERSION, 
+	            LATEST_MOD_TIME
+	        ) VALUES (
+	            #{certificateCodeMd5, jdbcType=VARCHAR}, 
+	            #{certificateCodeSuffix, jdbcType=VARCHAR}, 
+	            #{name, jdbcType=VARCHAR}, 
+	            #{sexcode, jdbcType=VARCHAR}, 
+	            #{gaDepartment, jdbcType=VARCHAR}, 
+	            #{unit, jdbcType=VARCHAR}, 
+	            #{orgLevel, jdbcType=VARCHAR}, 
+	            #{policeSort, jdbcType=VARCHAR}, 
+	            #{policeNo, jdbcType=VARCHAR}, 
+	            #{sensitiveLevel, jdbcType=VARCHAR}, 
+	            #{businessType, jdbcType=VARCHAR}, 
+	            #{takeOffice, jdbcType=VARCHAR}, 
+	            #{userStatus, jdbcType=CHAR}, 
+	            #{deleteStatus, jdbcType=CHAR}, 
+	            #{dataVersion, jdbcType=DECIMAL}, 
+	            #{latestModTime, jdbcType=DECIMAL}
+	        )
+    	]]>
+    </insert>
+    
+    <update id="update" parameterType="taiji.snappy.plugin.userattrmanage.model.WaAuthorityPolice">
+    <![CDATA[
+        UPDATE WA_AUTHORITY_POLICE SET
+            CERTIFICATE_CODE_SUFFIX = #{certificateCodeSuffix, jdbcType=VARCHAR} ,
+            NAME = #{name, jdbcType=VARCHAR} ,
+            SEXCODE = #{sexcode, jdbcType=VARCHAR} ,
+            GA_DEPARTMENT = #{gaDepartment, jdbcType=VARCHAR} ,
+            UNIT = #{unit, jdbcType=VARCHAR} ,
+            ORG_LEVEL = #{orgLevel, jdbcType=VARCHAR} ,
+            POLICE_SORT = #{policeSort, jdbcType=VARCHAR} ,
+            POLICE_NO = #{policeNo, jdbcType=VARCHAR} ,
+            SENSITIVE_LEVEL = #{sensitiveLevel, jdbcType=VARCHAR} ,
+            BUSINESS_TYPE = #{businessType, jdbcType=VARCHAR} ,
+            TAKE_OFFICE = #{takeOffice, jdbcType=VARCHAR} ,
+            USER_STATUS = #{userStatus, jdbcType=CHAR} ,
+            DELETE_STATUS = #{deleteStatus, jdbcType=CHAR} ,
+            DATA_VERSION = #{dataVersion, jdbcType=DECIMAL} ,
+            LATEST_MOD_TIME = #{latestModTime, jdbcType=DECIMAL} 
+        WHERE 
+            CERTIFICATE_CODE_MD5 = #{certificateCodeMd5, jdbcType=VARCHAR} 
+    ]]>
+    </update>
+    
+    <select id="getById" resultMap="BaseDGMap" parameterType="java.math.BigDecimal">
+        SELECT
+            <include refid="BaseColumns" />
+        <![CDATA[
+        FROM WA_AUTHORITY_POLICE 
+        WHERE 
+            CERTIFICATE_CODE_MD5 = #{id, jdbcType=VARCHAR} 
+        ]]>
+    </select>
+    
+    <delete id="deleteById">
+    <![CDATA[
+        DELETE FROM WA_AUTHORITY_POLICE WHERE
+        CERTIFICATE_CODE_MD5 = #{id, jdbcType=VARCHAR} 
+    ]]>
+    </delete>
+    
+    <!-- 数据列表排序使用Sort进行排序 -->
+    <select id="findAll" resultMap="BaseDGMap" parameterType="taiji.snappy.plugin.userattrmanage.model.WaAuthorityPolice">
+		<include refid="com.dgtech.base.mybatis.DataBoundsMapper.DialectPagePrefix" />
+        SELECT
+            <include refid="BaseColumns" />
+        FROM WA_AUTHORITY_POLICE 
+            <include refid="findAllWhereClause"/>
+        <if test="orderBy != null" >
+         	${orderBy}
+        </if>
+        <if test="orderBy == null" >
+        	ORDER BY CERTIFICATE_CODE_MD5 DESC	
+        </if>
+		<include refid="com.dgtech.base.mybatis.DataBoundsMapper.DialectPageSuffix" />
+    </select>
+	<sql id="findAllWhereClause">
+	<!-- ognl访问静态方法的表达式 为@class@method(args),以下为调用rapid中的Ognl.isNotEmpty()方法,还有其它方法如isNotBlank()可以使用，具体请查看Ognl类 -->
+		<where>                          
+			<if test="record.certificateCodeMd5 != null">
+				AND CERTIFICATE_CODE_MD5 = #{record.certificateCodeMd5, jdbcType=VARCHAR}
+			</if>
+			<if test="record.certificateCodeSuffix != null">
+				AND CERTIFICATE_CODE_SUFFIX = #{record.certificateCodeSuffix, jdbcType=VARCHAR}
+			</if>
+			<if test="record.name != null">
+				AND NAME = #{record.name, jdbcType=VARCHAR}
+			</if>
+			<if test="record.sexcode != null">
+				AND SEXCODE = #{record.sexcode, jdbcType=VARCHAR}
+			</if>
+			<if test="record.gaDepartment != null">
+				AND GA_DEPARTMENT = #{record.gaDepartment, jdbcType=VARCHAR}
+			</if>
+			<if test="record.unit != null">
+				AND UNIT = #{record.unit, jdbcType=VARCHAR}
+			</if>
+			<if test="record.orgLevel != null">
+				AND ORG_LEVEL = #{record.orgLevel, jdbcType=VARCHAR}
+			</if>
+			<if test="record.policeSort != null">
+				AND POLICE_SORT = #{record.policeSort, jdbcType=VARCHAR}
+			</if>
+			<if test="record.policeNo != null">
+				AND POLICE_NO = #{record.policeNo, jdbcType=VARCHAR}
+			</if>
+			<if test="record.sensitiveLevel != null">
+				AND SENSITIVE_LEVEL = #{record.sensitiveLevel, jdbcType=VARCHAR}
+			</if>
+			<if test="record.businessType != null">
+				AND BUSINESS_TYPE = #{record.businessType, jdbcType=VARCHAR}
+			</if>
+			<if test="record.takeOffice != null">
+				AND TAKE_OFFICE = #{record.takeOffice, jdbcType=VARCHAR}
+			</if>
+			<if test="record.userStatus != null">
+				AND USER_STATUS = #{record.userStatus, jdbcType=CHAR}
+			</if>
+			<if test="record.deleteStatus != null">
+				AND DELETE_STATUS = #{record.deleteStatus, jdbcType=CHAR}
+			</if>
+			<if test="record.dataVersion != null">
+				AND DATA_VERSION = #{record.dataVersion, jdbcType=DECIMAL}
+			</if>
+			<if test="record.latestModTime != null">
+				AND LATEST_MOD_TIME = #{record.latestModTime, jdbcType=DECIMAL}
+			</if>
+		</where>
+	</sql>
+    
+    
+	<select id="getCount" resultType="java.lang.Long">
+		SELECT COUNT(*) FROM WA_AUTHORITY_POLICE 
+		<include refid="findPageWhereClause"/>    
+	</select>
+    <!-- 分页查询使用Dialect进行分页 -->
+    <!-- 数据列表排序使用Sort进行排序 -->
+    <select id="findPage" resultMap="BaseDGMap" parameterType="taiji.snappy.plugin.userattrmanage.model.WaAuthorityPolice">
+		<include refid="com.dgtech.base.mybatis.DataBoundsMapper.DialectPagePrefix" />
+        SELECT
+            <include refid="BaseColumns" />
+        FROM WA_AUTHORITY_POLICE 
+            <include refid="findPageWhereClause"/>
+        <if test="orderBy != null" >
+         	${orderBy}
+        </if>
+        <if test="orderBy == null" >
+        	ORDER BY CERTIFICATE_CODE_MD5 DESC	
+        </if>
+		<include refid="com.dgtech.base.mybatis.DataBoundsMapper.DialectPageSuffix" />
+    </select>
+	<sql id="findPageWhereClause">
+	<!-- ognl访问静态方法的表达式 为@class@method(args),以下为调用rapid中的Ognl.isNotEmpty()方法,还有其它方法如isNotBlank()可以使用，具体请查看Ognl类 -->
+	    <where>                          
+	       <if test="record.certificateCodeMd5 != null">
+	            AND CERTIFICATE_CODE_MD5 = #{record.certificateCodeMd5, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.certificateCodeSuffix != null">
+	            AND CERTIFICATE_CODE_SUFFIX = #{record.certificateCodeSuffix, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.name != null">
+	            AND NAME = #{record.name, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.sexcode != null">
+	            AND SEXCODE = #{record.sexcode, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.gaDepartment != null">
+	            AND GA_DEPARTMENT = #{record.gaDepartment, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.unit != null">
+	            AND UNIT = #{record.unit, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.orgLevel != null">
+	            AND ORG_LEVEL = #{record.orgLevel, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.policeSort != null">
+	            AND POLICE_SORT = #{record.policeSort, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.policeNo != null">
+	            AND POLICE_NO = #{record.policeNo, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.sensitiveLevel != null">
+	            AND SENSITIVE_LEVEL = #{record.sensitiveLevel, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.businessType != null">
+	            AND BUSINESS_TYPE = #{record.businessType, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.takeOffice != null">
+	            AND TAKE_OFFICE = #{record.takeOffice, jdbcType=VARCHAR}
+	        </if>
+	       <if test="record.userStatus != null">
+	            AND USER_STATUS = #{record.userStatus, jdbcType=CHAR}
+	        </if>
+	       <if test="record.deleteStatus != null">
+	            AND DELETE_STATUS = #{record.deleteStatus, jdbcType=CHAR}
+	        </if>
+	       <if test="record.dataVersion != null">
+	            AND DATA_VERSION = #{record.dataVersion, jdbcType=DECIMAL}
+	        </if>
+	       <if test="record.latestModTime != null">
+	            AND LATEST_MOD_TIME = #{record.latestModTime, jdbcType=DECIMAL}
+	        </if>
+	    </where>
+	</sql>
+	
+    <!-- 自动生成结束 -->
+</mapper>
+
